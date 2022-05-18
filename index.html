@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>
+			Grip Home Page
+		</title>
+		<style>
+            body{
+                background-image:linear-gradient(to right,orange,orangered);
+                background-attachment:fixed;
+            }
+            h1{
+                text-decoration:underline;
+                color:lime;
+                background-color:blue;
+                opacity:0.5;
+            }
+            label{
+                font-size:20px;
+                font-family:Copperplate;
+            }
+            .tbox{
+                border-radius:40px;
+            }
+        </style>
+	</head>
+	<body>
+		<center>
+			<h1>Basic Banking System</h1>
+		
+		<form method=post>
+			<input type=submit style="background-color:#8FBC8F;font-style:bold;font-size:18px;border-radius:40px;" value ="View all Customers" name="btn_click">
+		</form>
+		<p id="details">
+			<?php
+				function disp()
+				{
+					$host="localhost";
+					$username="id18781788_sudheesh";
+					$password="Sudheesh$12345";
+					$dbname="id18781788_bankingcustomers";
+
+					$conn=mysqli_connect($host,$username,$password,$dbname);
+					if(mysqli_connect_errno())
+						echo "Connection could not established...".mysqli_connect_error();
+					else
+						$query="select * from Customers";
+						$result=mysqli_query($conn,$query);
+						echo "<br>";
+						echo "<table border='2' cellspacing='0' cellpadding='25'>";
+						echo "<tr style='color:Tomato;font-size:23px;font-family:Copperplate;background-color:Aqua;'><td>Name</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Email</td><td>Balance</td>";
+						foreach($result as $row)
+						{
+							echo "<tr style='font-size:20px;font-family:Garamond;background-color:Yellow;'>";
+							echo "<td>$row[name]</td><td>$row[email]</td><td>$row[currentbal]</td>";
+							echo "</tr>";
+						}
+						echo "</table>";
+						echo "<br>";
+						echo '<form method="post">
+							<label for=sender>Enter Sender:</label>
+							<input  type=text id="s" class="tbox" name=sender placeholder="Sender Name must match" size=25/>&nbsp;&nbsp;
+							<label for=sender>Enter Receiver:</label>
+							<input name=receiver type=text  id="r" class="tbox" placeholder="Receiver Name must match" size=25/><br/><br/>
+							<label for=sender>Enter Money to Transfer:</label>
+							<input name=amount type=text  class="tbox" placeholder="Please enter Money" size=20/><br/><br/>
+							<input type=submit style="background-color:#ADD8E6;font-style:bold;font-size:20px;border-radius:40px;" name=btn value="Send Money"/>
+						</form>';
+				}
+				function displayTransactionHistory(){
+							$host="localhost";
+							$username="id18781788_sudheesh";
+							$password="Sudheesh$12345";
+							$dbname="id18781788_bankingcustomers";
+							$conn=mysqli_connect($host,$username,$password,$dbname);
+							if(mysqli_connect_errno())
+								echo "Connection could not established...".mysqli_connect_error();
+							else
+								$query="select * from Transfers";
+								$result=mysqli_query($conn,$query);
+								echo "<br>";
+								echo "<table border='1' cellspacing='0' cellpadding='25'>";
+								echo '<tr style="color:Tomato;font-family:Copperplate;background-color:Aqua;"><th class=tth>Sender Name</th><th class=tth>Receiver Name</th><th class=tth>Amount Transactioned</th><th class=tth>Date&Time</th>';
+								foreach($result as $row)
+								{
+									echo "<tr>";
+									echo "<td class=ttd>$row[sender_name]</td><td class=ttd>$row[receiver_name]</td><td class=ttd>$row[amount_transactioned]</td><td class=ttd>$row[date_time]</td>";
+									echo "</tr>";
+								}
+								echo "</table><br>";
+				}
+				if(isset($_POST['btn_click'])){
+						disp();
+				}
+				if(isset($_POST['std'])){
+					displayTransactionHistory();
+				}
+			?>	
+		</p>
+		
+		<?php
+    if(isset($_POST['btn'])){
+                    $host="localhost";
+					$username="id18781788_sudheesh";
+					$password="Sudheesh$12345";
+					$dbname="id18781788_bankingcustomers";
+
+					$conn=mysqli_connect($host,$username,$password,$dbname);
+					if(mysqli_connect_errno())
+						echo "Connection could not established...".mysqli_connect_error();
+					else
+						$sender=$_POST['sender'];
+						
+						$query="select * from Customers where name='$sender'";
+						$result=mysqli_query($conn,$query);
+						foreach($result as $row)
+						{
+							$bal=$row[currentbal];
+							
+						}
+						if (mysqli_num_rows($result) > 0)
+						{
+							$money=$_POST['amount'];
+							
+							if($bal>=$money)
+							{
+								$receiver=$_POST['receiver'];
+								$query="select * from Customers where name='$receiver'";
+								$result=mysqli_query($conn,$query);
+								foreach($result as $row)
+								{
+									$bal1=$row[currentbal];
+									
+								}
+								if (mysqli_num_rows($result) > 0)
+								{
+								
+									if($sender==$receiver){
+										echo "<h3>After transaction the details are</h3>";
+										disp();
+									}
+									else{
+										$updatedmoney=$bal-$money;
+									
+										$query="update Customers SET currentbal='$updatedmoney' where name='$sender'";
+										$result=mysqli_query($conn,$query);
+										
+										
+										$updatedmoney1=$bal1+$money;
+										
+										$query="update Customers SET currentbal='$updatedmoney1' where name='$receiver'";
+										$result=mysqli_query($conn,$query);
+										date_default_timezone_set("Asia/Calcutta");
+										$dt=date('Y-m-d H:i:s');
+										$tquery="INSERT INTO Transfers(`sender_name`, `receiver_name`, `amount_transactioned`, `date_time`) VALUES ('$sender','$receiver','$money','$dt')";
+										$tresult=mysqli_query($conn,$tquery);
+										echo "<h3>After transaction the details are</h3>";
+										disp();
+										echo '<br><br><form method="post">
+										          <input type=submit style="background-color:#ADD8E6;font-style:bold;font-size:20px;border-radius:40px;" name=std value="Transaction History"/>
+										            </form><br><br>';
+										echo "<br/>";
+									}
+								}
+								else{
+									echo '<script>alert("Receiver Details not found")</script>';
+									disp();
+								}
+							}
+							else{
+								echo '<script>alert("Insufficient money from Sender Side to make transactions")</script>';
+								disp();
+							}
+								
+						}
+						else{
+							echo '<script>alert("Sender Details not found")</script>';
+							disp();
+						}
+    }
+    ?>
+	</center>
+	</body>
+	<footer>
+	<br/><br/><br/><br/><br/>
+	<center>
+	  <p>For Further Details, Please Mail us at 
+	  <a href="mailto:basicbank@in.com">basicbank@in.com</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	  Need Help? Call us Monday-Firday 10 AM to 4 PM (IST) &nbsp;&nbsp;
+	  
+	  <b> +91 9701527187 </b>
+	  </p>
+	  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSllqPqzILbsCjyH24hhid_CSbSld4rWZSpdg&usqp=CAU" id="img2" width="100" height="100">
+	  </center>
+	</footer>
+</html>
